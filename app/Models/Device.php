@@ -55,6 +55,7 @@ class Device extends BaseModel
         'display',
         'icon',
         'ignore',
+        'ignore_status',
         'ip',
         'location_id',
         'notes',
@@ -77,6 +78,7 @@ class Device extends BaseModel
         'sysObjectID',
         'timeout',
         'transport',
+        'type',
         'version',
         'uptime',
     ];
@@ -466,6 +468,7 @@ class Device extends BaseModel
         if (empty($ip)) {
             return null;
         }
+
         // @ suppresses warning, inet_ntop() returns false if it fails
         return @inet_ntop($ip) ?: null;
     }
@@ -791,6 +794,11 @@ class Device extends BaseModel
         return $this->hasMany(Ipv4Mac::class, 'device_id');
     }
 
+    public function maps(): HasManyThrough
+    {
+        return $this->hasManyThrough(CustomMap::class, CustomMapNode::class, 'device_id', 'custom_map_id', 'device_id', 'custom_map_id');
+    }
+
     public function mefInfo(): HasMany
     {
         return $this->hasMany(MefInfo::class, 'device_id');
@@ -834,11 +842,6 @@ class Device extends BaseModel
     public function parents(): BelongsToMany
     {
         return $this->belongsToMany(self::class, 'device_relationships', 'child_device_id', 'parent_device_id');
-    }
-
-    public function perf(): HasMany
-    {
-        return $this->hasMany(\App\Models\DevicePerf::class, 'device_id');
     }
 
     public function ports(): HasMany
